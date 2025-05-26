@@ -1,0 +1,9 @@
+Evaluación Node + React
+
+Desarrollar una app de Lista de Tareas en la que un usuario registrado puede ver, modificar, crear, eliminar tareas. Lógicamente, 
+el usuario tiene que tener acceso solo a sus propias tareas y no podrá ni ver, ni modificar, ni eliminar, tareas de otro usuario.
+Si no está registrado, no puede ver nada. Utilizar JWT.
+La página de visualización debe tener unos filtros básicos (mínimo ver pendientes y ver completadas y algún filtro más a elección) y ordenamiento.
+Las tareas se pueden marcar como completadas. Una tarea completada no debe ser eliminada automáticamente (salvo confirmación del usuario) y debe poder seguir siendo consultada.. 
+Utilizar redux toolkit o context al menos, y es obligatoria la conexión contra una DB puede ser mongo, firebase, 
+maría o incluso podemos crear una DB exclusiva en el servidor de eBP para usar una instancia de SQL Server.
