@@ -6,6 +6,20 @@ const API_KEY = process.env.FIREBASE_API_KEY;
 
 const registrarUsuario = async (req, res) => {
   const { email, password, nombre } = req.body;
+  
+  if (!email || !password || !nombre) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Email inválido' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+    } 
+
   try {
     const user = await admin.auth().createUser({
       email,
@@ -66,6 +80,10 @@ const loginUsuario = async (req, res) => {
 
 const obtenerPerfil = async (req, res) => {
   const uid = req.user.uid;
+  
+  if (!uid) {
+  return res.status(401).json({ error: 'No autorizado' });
+  }
 
   try {
     const doc = await db.collection('usuarios').doc(uid).get();

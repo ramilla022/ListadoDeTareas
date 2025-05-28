@@ -2,6 +2,7 @@ const Tarea = {
     usuarioId: '',
     descripcion: '',
     tipo: '',
+    estado:'',
     fechaCreacion: '',
   };
   
