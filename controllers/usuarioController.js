@@ -47,7 +47,6 @@ const loginUsuario = async (req, res) => {
   try {
     const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-
     const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,10 +67,11 @@ const loginUsuario = async (req, res) => {
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({
-      message: 'Inicio de sesión exitoso',
       token,
-      uid: data.localId,
-      email: data.email,
+      usuario: {
+        uid: data.localId,
+        email: data.email,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
