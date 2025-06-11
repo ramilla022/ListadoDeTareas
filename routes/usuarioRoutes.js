@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import usuarioController from '../controllers/usuarioController.js';
+import { registrarUsuario, loginUsuario, obtenerPerfil }  from '../controllers/usuarioController.js';
 import { validarToken } from '../middlewares/validarToken.js'
 
-const { registrarUsuario, loginUsuario, obtenerPerfil } = usuarioController;
 
 
 const usuarioRoutes = Router()

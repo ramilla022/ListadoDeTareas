@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import tareaController from '../controllers/tareaController.js';
-
-const {obtenerTareasPorUsuario, crearTarea, modificarTarea, eliminarTarea} = tareaController
+import {obtenerTareasPorUsuario, crearTarea, modificarTarea, eliminarTarea} from '../controllers/tareaController.js';
 
 const tareaRoutes = Router()
 
