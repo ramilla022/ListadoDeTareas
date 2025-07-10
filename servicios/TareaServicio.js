@@ -1,6 +1,5 @@
-import admin from 'firebase-admin';
+import { db } from '../connection/Firebase.js';
 
-const db = admin.firestore();
 const tareasCollection = db.collection('tareas');
 
 export const crearTarea = async ({ usuarioId, descripcion, tipo, estado, fechaCreacion }) => {

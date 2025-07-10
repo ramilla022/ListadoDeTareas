@@ -1,8 +1,10 @@
-import { admin, db } from '../connection/Firebase.js';
+import { db } from '../connection/Firebase.js';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const API_KEY = process.env.FIREBASE_API_KEY;
+
+const usuariosCollection = db.collection('usuarios');
 
 export const registrarUsuario = async ({ email, password, nombre }) => {
   if (!email || !password || !nombre) {
@@ -18,49 +20,44 @@ export const registrarUsuario = async ({ email, password, nombre }) => {
     throw new Error('La contraseña debe tener al menos 6 caracteres');
   }
 
-  const user = await admin.auth().createUser({
-    email,
-    password,
-    displayName: nombre,
-  });
+  const existeUsuario = await obtenerUsuarioPorEmail(email);
+  if (existeUsuario) {
+  throw new Error('El email ya está registrado');
+  }
 
-  await db.collection('usuarios').doc(user.uid).set({
-    id: user.uid,
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const nuevoUsuarioRef = await usuariosCollection.add({
     nombre,
     email,
+    passwordHash,
     fechaRegistro: new Date().toISOString(),
   });
 
-  return { uid: user.uid };
+  return { uid: nuevoUsuarioRef.id };
 };
 
 export const loginUsuario = async ({ email, password }) => {
-  const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, returnSecureToken: true }),
-  });
+  const usuario = await obtenerUsuarioPorEmail(email);
 
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error('Credenciales inválidas');
+  if (!usuario) {
+    throw new Error('Usuario no encontrado');
   }
 
-  const tokenPayload = {
-    uid: data.localId,
-    email: data.email,
-  };
+const passwordValido = await bcrypt.compare(password, usuario.passwordHash);
+  if (!passwordValido) {
+    throw new Error('Contraseña inválida');
+  }
 
-  const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ uid: usuario.id, email: usuario.email },JWT_SECRET,{ expiresIn: '1h' });
 
   return {
     token,
     usuario: {
-      uid: data.localId,
-      email: data.email,
+      uid: usuario.id,
+      email: usuario.email,
+      nombre: usuario.nombre,
     },
   };
 };
@@ -68,8 +65,25 @@ export const loginUsuario = async ({ email, password }) => {
 export const obtenerPerfil = async (uid) => {
   if (!uid) throw new Error('No autorizado');
 
-  const doc = await db.collection('usuarios').doc(uid).get();
+  const doc = await usuariosCollection.doc(uid).get();
   if (!doc.exists) throw new Error('Usuario no encontrado');
 
-  return doc.data();
+  const usuario = doc.data();
+  delete usuario.passwordHash;
+
+  return usuario;
+};
+
+export const obtenerUsuarioPorEmail = async (email) => {
+  const snapshot = await usuariosCollection.where('email', '==', email.toLowerCase()).limit(1).get();
+
+  if (snapshot.empty) {
+    console.log('No se encontró ningún usuario');
+    return null;
+  }
+
+  const doc = snapshot.docs[0];
+  const usuario = { id: doc.id, ...doc.data() };
+
+  return usuario;
 };
