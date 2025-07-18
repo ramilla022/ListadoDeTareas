@@ -35,3 +35,19 @@ export const obtenerTareasPorUsuario = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener tareas', error });
   }
 };
+
+export const obtenerHistorialPorUsuarios = async (req, res) => {
+  try {
+    const { usuarioId } = req.params;
+
+    if (!usuarioId) {
+      return res.status(400).json({ error: 'Falta el ID del usuario' });
+    }
+
+    const historial = await tareaService.obtenerHistorialDesdeDB(usuarioId);
+    res.json(historial);
+  } catch (error) {
+    console.error("🔥 Error al obtener historial:", error.message);
+    res.status(500).json({ error: 'Error al obtener historial' });
+  }
+};
